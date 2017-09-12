@@ -1,0 +1,360 @@
+<!-- A visualforce page for online booking of hotel including Room reservation, payment, extra facilities.
+    A screenshot can be found Online Booking Application - New Page 
+All right reserved; Tanmoy Das @2017 
+-->
+
+
+<apex:page id="pageNewReservation"  docType="html-5.0"  standardController="Payment__c" extensions="NewReservationClass" sidebar="false" showHeader="false" standardStylesheets="true" >
+    
+    <Apex:form >
+        <apex:pageMessages id="pageMSG" >
+        </apex:pageMessages>
+        
+        <html>
+            <head>
+                <title>
+                    Reservation Creation by Employee
+                </title>
+                
+                <style>
+                    .navUL{
+                    width:100%;
+                    background-color:#FF5733;
+                    }
+                    .navLIST{
+                    display:inline-block;
+                    padding: 1.5%;
+                    padding-top: 1%;
+                    padding-bottom: 1%;
+                    color:white;
+                    font-weight: bolder;
+                    font-size:1rem;
+                    
+                    }
+                    .navLIST:hover{
+                    color:black;
+                    background-color:white;
+                    }
+                    div.hideCurrDate span.dateInput span.dateFormat{
+                    display:none;
+                    }
+                    *{ margin:0; padding:0; 
+                    }
+                    html{
+                    background-color:#CCD1D1
+                    }
+                    body{ 
+                    width: 80%; margin:0 auto; vertical-align: middle; background-color:white;
+                    }
+                    #check-table{
+                    margin: .5rem 1rem 1rem 1rem; padding: 1rem;
+                    }
+                    #room-table{
+                    margin: 1rem; padding: 1rem; border: dotted;
+                    }
+                    #account-table{
+                    margin: 0 1rem 1rem 1rem; padding: 1rem ; width:50%; float:left;
+                    }
+                    #comment-table{
+                    margin: 0 1rem 1rem 1rem; padding: 1rem ; width:65%; float:left;
+                    }
+                    
+                    #booking-table{
+                    background-color:#E6E6E6; margin: 0 1rem 0rem 1rem ; padding: 1rem; width:15rem; 
+                    }
+                    hr{
+                    margin:0; padding:0; color:#E6E6E6
+                    }
+                    .dateFormat{display:none} /* Dont display the date beside inputField date */   
+                    .table-row  td {
+                    border-top:1pt solid black;
+                    }
+                    .table-row-outstanding td{
+                    padding:1rem 0 0 0; color:red; font-weight:bolder;
+                    border-top:3pt solid black;
+                    }
+                    .cell-add-payment-detail{
+                        width:7rem;
+                    }
+                </style>
+                
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+                
+            </head>
+            <body>
+                <apex:pageBlock >
+                    <div id="container" >
+                        <header style="background-color:black; color:white; font-size:1rem; font-weight:bold; text-align:left; margin-top: 2rem; padding:1rem">
+                            New Reservation
+                        </header>
+                        
+                        <ul class="navUL">
+                            <li class="navLIST" id="DetailBtn"> <a href="#detailDiv">Details</a></li>
+                            <li class="navLIST"> Guest </li>
+                            <li class="navLIST"> Inclusions </li>
+                            <li class="navLIST" id="ExtraItemBtn"> <a href="#ExtraItemDiv">Extra Items</a></li>
+                            <li class="navLIST"> Payments</li>
+                            <li class="navLIST" id="NoteBtn">  <a href="#NoteDiv"> Notes </a></li>
+                            <li class="navLIST"> Invoices</li>
+                        </ul>
+                        <script>
+                                $(function() {
+                                $('#ExtraItemBtn').click(function() {
+                                    $('#detailDiv').hide();
+                                    $('#ExtraItemDiv').show(); 
+                                    $('#paymentDiv').show();                                        
+                                    $('#NoteDiv').hide();                                 
+                                    $('#saveBtnDiv').show(); 
+                                });        
+                            });
+                                $(function() {
+                                $('#DetailBtn').click(function() {
+                                    $('#detailDiv').show();
+                                    $('#ExtraItemDiv').hide();
+                                    $('#NoteDiv').hide();
+                                    return false;
+                                });        
+                            }); 
+                             $(function() {
+                                $('#NoteBtn').click(function() {
+                                      $('#detailDiv').hide();
+                                    $('#ExtraItemDiv').hide(); 
+                                    $('#NoteDiv').show();
+                                    return false;
+                                });        
+                            });
+                            
+                             $(function() {
+                                $('#AddPaymentBtn').click(function() {
+                                    $('#AddPaymentDetail').show();
+                                    return false;
+                                });        
+                            });
+                        </script>
+                        <div id="detailDiv">
+                        <!-- Reservation -->
+                        <apex:actionRegion >
+                            <apex:pageBlockSection id="test" >
+                                <apex:pageBlockSection >
+                                    <apex:inputField value="{!objectReservation.Check_In__c}">
+                                        <apex:actionSupport event="onchange" action="{!onChangeFnCall}" reRender="lengthOfStay, idBasicSummary" />
+                                    </apex:inputField>
+                                    <apex:inputField value="{!objectReservation.Check_Out__c}">
+                                        <apex:actionSupport event="onchange" action="{!onChangeFnCall}" reRender="lengthOfStay, idBasicSummary" />
+                                    </apex:inputField>
+                                </apex:pageBlockSection>
+                                <apex:pageBlockSection >
+                                    <apex:outputText value="{!numberOfStay}" label="Length of Stay" id="lengthOfStay" style="width:22rem;"/> 
+                                    <apex:inputField value="{!objectReservation.Status__c}" />            <!-- http://jsfiddle.net/reeK5/ -->     
+                                </apex:pageBlockSection>
+                            </apex:pageBlockSection>
+                        </apex:actionRegion> <!-- End of Reservation -->
+                        
+                        <!-- Room -->
+                        <div id="Room" style="width:100%; margin: 0 1.5rem .5rem 1.5rem; "> 
+                            <apex:actionRegion >
+                                <div id="placeholder" style="width:70rem;" >
+                                    <div id="template">
+                                        <apex:actionFunction name="JS" action="{!calculateRoomCharge}" reRender="wrapper1,idBasicSummary" />
+                                        <apex:outputPanel id="wrapper1" >
+                                            <apex:pageBlockSection columns="1">
+                                                <apex:pageBlockTable value="{!listWrapper}" var="Line" style="max-width: 60rem; width: 100% !important;" >
+                                                    <apex:column headerValue="Room Type"  >       
+                                                        <apex:inputField value="{!Line.objLine.Room_Type__c}" style="width:7rem; margin:0">
+                                                            <apex:actionSupport event="onchange" action="{!calculateRoomCharge}" reRender="wrapper1,idBasicSummary" />
+                                                        </apex:inputField>
+                                                    </apex:column>
+                                                    <apex:column headerValue="Rate Plan" > 
+                                                        <apex:inputField value="{!Line.objLine.Rate_PlanR__c }" style="width:7rem; margin:0" > 
+                                                            <apex:actionSupport event="onchange" action="{!calculateRoomCharge}" reRender="wrapper1,idBasicSummary" />
+                                                        </apex:inputField> 
+                                                    </apex:column>
+                                                    <apex:column headerValue="Room #" style="margin:0" >                  
+                                                        <apex:inputField value="{!Line.objLine.Room_Number__c }" style="width:7rem; margin:0"/>  
+                                                    </apex:column>    
+                                                    <apex:column headerValue="Adult" >
+                                                        <apex:outputText value="1" style="width:6rem;" /> 
+                                                    </apex:column>
+                                                    <apex:column headerValue="Children" styleClass=" margin:0; padding:0; " > 
+                                                        <apex:inputField value="{!Line.objLine.No_of_Child__c}" style="width:4rem;" onblur="JS(); return false;" >
+                                                            <!--<apex:actionSupport event="onblur" action="{!recalculateFormulas}" reRender="wrapper1,idBasicSummary" /> -->
+                                                        </apex:inputField>   
+                                                        <!--     <apex:actionStatus startText=" (calculating)" id="counterStatus"/> -->
+                                                    </apex:column>
+                                                    <apex:column headerValue="Infant" style="width:2rem">
+                                                        <apex:inputField value="{!Line.objLine.No_of_Infant__c }" style="width:3rem;"  >
+                                                            <apex:actionSupport event="onchange" action="{!recalculateFormulas}" reRender="wrapper1,idBasicSummary" />
+                                                        </apex:inputField>   
+                                                    </apex:column>
+                                                    <apex:column headerValue="Room" style="width:2rem">
+                                                        <apex:OutputField value="{!Line.objLine.Room_Price__c}"  id="roomPrice">
+                                                            <!--<apex:actionSupport event="onchange" action="{!calculateBasicSummary}" reRender="idBasicSummary" /> -->
+                                                        </apex:OutputField>    
+                                                    </apex:column>
+                                                    <apex:column headerValue="Extra" style="width:2rem">
+                                                        <apex:inputField value="{!Line.objLine.ExtraR__c }" id="extra" >
+                                                            <!--<apex:actionSupport event="onchange" action="{!calculateBasicSummary}" reRender="idBasicSummary" /> -->
+                                                        </apex:inputField>    
+                                                    </apex:column>
+                                                    <apex:column headerValue="Discount" style="width:5px !important;">
+                                                        <apex:inputField value="{!Line.objLine.DiscountR__c  }" >   
+                                                            <!--<apex:actionSupport event="onchange" action="{!calculateBasicSummary}" reRender="idBasicSummary" /> -->
+                                                        </apex:inputField>      
+                                                    </apex:column>
+                                                </apex:pageBlockTable>
+                                            </apex:pageBlockSection>
+                                        </apex:outputPanel>
+                                        <!--    </apex:actionRegion>  -->
+                                        <!-- Add more Line Item by clicking the "Add Line" button in the page -->
+                                        <apex:commandButton action="{!addLineItem}" value="Add Another Room" reRender="wrapper1" style="margin-right:10rem; float:right;"  id="addRoom"/>   
+                                        <apex:commandButton action="{!deleteLineItem}" value="*" reRender="wrapper1" immediate="true" style="display:inline" />   <!-- Add line funcitionality -->
+                                    </div> <!-- template -->
+                                </div> <!-- placeholder -->
+                            </apex:actionRegion>
+                        </div> <!-- End of Room -->
+                        
+                        <!-- Account & Reservation information -->
+                        <div id="AccountAndPayment" style="border-top: 0.1rem solid gray;" >   
+                            <apex:actionRegion > 
+                                <table id="account-table" >
+                                    <tr> <td style="color:#E84848; font-size:1.5rem">Primary Contact</td> <td style="color: blue"> Search </td> </tr> 
+                                    
+                                    <tr> <th colspan="3" style="font-weight:bold" align="left" >    Name </th> 
+                                        <th colspan="2" style="font-weight:bold" align="left">      Email </th> 
+                                        <td style="font-weight:bold">Phone </td></tr>
+                                    <tr> 
+                                        <th colspan="3">    <apex:inputField value="{!objectAccount.Name }" html-placeholder="Name" style="width: 100%;"/> </th> 
+                                        <th colspan="2">    <apex:inputField value="{!objectAccount.Email__c }" html-placeholder="Email" style="width: 100%;" /> </th> 
+                                        <td>                <apex:inputField value="{!objectAccount.Phone }" html-placeholder="Phone" style="width: 7rem;"/> </td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3" style="font-weight:bold" align="left">  Address</th>  
+                                        <th colspan="1"  style="font-weight:bold" align="left"> Payment</th>     
+                                        <td></td>
+                                        <td style="font-weight:bold">   Other Details</td>
+                                    </tr>
+                                    <tr>
+                                        <td>                <apex:inputField value="{!objectAccount.Organization__c }" html-placeholder="Organization"/>   </td>
+                                        <th colspan="2" >   <apex:inputField value="{!objectAccount.City__c }" html-placeholder="City" style="width: 100%;"/>   </th>
+                                        <th colspan="2" >   <apex:inputField value="{!objectPayment.Card_Number__c }" html-placeholder="Card Number" style="width: 100%;"/>    </th>
+                                        <th><apex:inputField value="{!objectReservation.Select_Arrival_Time__c }" style="width: 7rem;"/>    </th>
+                                    </tr>
+                                    <tr>
+                                        <td><apex:inputField value="{!objectAccount.Address_Line__c }" html-placeholder="Address Line 1"/> </td>
+                                        <td><apex:inputField value="{!objectAccount.State__c }" html-placeholder="State" style="width: 6rem;"/> </td>  
+                                        <td><apex:inputField value="{!objectAccount.BillingPostalCode }" html-placeholder="Postal Code" style="width: 6rem;"/> </td>
+                                        <td><apex:inputField value="{!objectPayment.Month_ExpirationDate__c }" html-placeholder="mm"/> </td>
+                                        <td><apex:inputField value="{!objectPayment.Year_ExpirationDate__c }" html-placeholder="year"/> </td>
+                                        <th><apex:inputField value="{!objectReservation.Referral__c }" style="width:7rem;"/> </th>
+                                    </tr>
+                                    <tr><td><apex:inputField value="{!objectAccount.Address_Line_2__c }" html-placeholder="Address Line 2"/> </td>
+                                        <th colspan="2"><apex:inputField value="{!objectAccount.Country__c }" /> </th>
+                                    </tr>
+                                    <tr> <th colspan="4" align="left" > Guest Comment</th>              </tr>
+                                    <tr><th colspan="4" align="left">   <apex:inputField value="{!objectAccount.Comment__c }" html-placeholder="Comment" style="width: 100%; height: 3rem" />  </th></tr> 
+                                </table>  <!-- End of Account table -->
+                            </apex:actionRegion>  <!-- End of Account table actionRegion -->
+                             </div>
+
+                            </div> <!-- end of detail div -->
+                            <div id="paymentDiv" style="float:right;">
+                            <!-- Payment table -->
+                            <apex:outputPanel id="idBasicSummary">
+                                <table id="booking-table" >
+                                    <tr><th style="font-weight:bolder; margin-left:0;"> Booking Summary </th> </tr>
+                                    <tr>    <td style="width:10rem"> Room Total</td>    <td   align="right"><apex:outputText value="{!Room_Total }"></apex:outputText> </td>       </tr>    
+                                    <tr>    <td> Extra Person Total</td>                <td   align="right"><apex:outputText value="{!Extra_Person_Total}"></apex:outputText></td>       </tr>    
+                                    <tr>    <td> Discount Total</td>                    <td   align="right"><apex:outputText value="{!Discount_Total}"></apex:outputText> </td>       </tr>
+                                    <tr>    <td> Credit Card Surcharge</td>             <td   align="right"><apex:outputText value="{!Credit_Card_Surcharge}"></apex:outputText> </td>       </tr>
+                                    <tr class="table-row">    <td> Total </td>        <td   align="right"><apex:outputText value="{!Total}"></apex:outputText></td>       </tr>
+                                    <tr>    <td> Total Received </td>                   <td   align="right"><apex:outputText value="{!Total_Received}"></apex:outputText></td>       </tr>
+                                    <tr class="table-row-outstanding" >   <td> Total Outstanding  </td>       <td  style="padding:2rem 0 0 0; color:red; font-weight:bold" align="right" > </td>       </tr> <!-- style="border-top: .5rem black solid;"  -->
+                                </table>                
+                            </apex:outputPanel><!-- 
+                            End of Payment table outputPanel
+                            --><!--Start of Add Payment button
+                            --><div id="AddPaymentBtn" style="background-color:#4286f4; font-weight:bold; text-align:center; color:white; padding: 0.5rem; width:14rem; position:relative; margin-right: 1rem; float:right;">
+                               <a href="#AddPaymentDetail" > + Add Payment  </a>
+                               <div id="AddPaymentDetailShowBtn" style="color:green">
+                               <a href="#" > Show </a>
+                               <div id="AddPaymentDetailHideBtn" style="color:blue">
+                                <a href="#" > Hide</a>
+                               <div id="AddPaymentDetail" style="position:absolute; display:none;  left: -20rem; bottom: 0px; width:20rem; color:white; background-color:#0061ff; text-align:left; padding:0.1rem">
+                                   <table >
+                                 <tr> <td style="color:white;" colspan="2">  Record Payment </td> </tr>
+                                 <tr> <td style="color:white;">  Amount </td><td style="color:white;">  Payment Date  </td> </tr> 
+                                <tr>  <td>  <apex:inputField value="{!Payment__c.Amount__c}" style="width:7rem" /> </td> <td>  <apex:inputField value="{!Payment__c.Payment_Date__c}"   style="width:7rem" />  </td> </tr>
+                                <tr> <td style="color:white;"> Payment Type </td> </tr>
+                                <tr><td>  <apex:inputField value="{!Payment__c.Payment_Type__c}"   style="width:7rem" />  </td> </tr>
+                                <tr><td style="width:7rem;  background-color:gray; color:white;"> Cancel  </td> <td style="width:7rem; background-color:green; color:white;"> Record  </td> </tr>
+                              </table>
+                                </div> <!-- End of AddPaymentDetail-->
+                                </div> <!-- End of AddPaymentDetailHideBtn -->
+                                </div> <!-- End of AddPaymentDetailShowBtn -->
+                            </div> <!-- End of Payment button-->
+                            </div> <!-- End of Payment div --> 
+                            
+                            <!-- Extra Item -->
+                            <div id="ExtraItemDiv" style="display:none; float:left; width:70%; margin: 0 1.5rem .5rem 1.5rem; background-color:white; "> 
+                            
+                                <apex:actionRegion >
+                                        <apex:commandButton action="{!addExtraItem}" value="+ Add New" reRender="wrapperEx" style="margin-right:10rem; float:right; color:red;"  id="addExtraRender"/>   
+                                
+                                    <div id="placeholder1" style="width:70rem;" >
+                                        <div id="template1">
+                                            <apex:actionFunction name="JS" action="{!CalculateExtraCharge}" reRender="wrapperEx,idBasicSummary" />
+                                            <apex:outputPanel id="wrapperEx" >
+                                                <apex:pageBlockSection columns="1">
+                                                    <apex:pageBlockTable value="{!listWrapperExt}" var="extraI" style="max-width: 40rem; width: 100% !important;" >
+                                                        <apex:column headerValue="Extra Item Name"  >       
+                                                            <apex:inputField value="{!extraI.objectExtra.Extra_Item_Name__c}" style="width:7rem; margin:0">
+                                                                <apex:actionSupport event="onchange" action="{!calculateRoomCharge}" reRender="wrapperEx,idBasicSummary" />
+                                                            </apex:inputField>
+                                                        </apex:column>
+                                                        <apex:column headerValue="Adult/Children" > 
+                                                            <apex:inputField value="{!extraI.objectExtra.Age_Level__c}" style="width:7rem; margin:0" > 
+                                                                <apex:actionSupport event="onchange" action="{!calculateRoomCharge}" reRender="wrapperEx,idBasicSummary" />
+                                                            </apex:inputField> 
+                                                        </apex:column>
+                                                        <apex:column headerValue="Item Total" > 
+                                                            <apex:outputText value="{!extraI.objectExtra.Item_Total__c}" style="width:3rem; margin:0" > 
+                                                            </apex:outputText> 
+                                                        </apex:column>
+                                                        <apex:column headerValue="Quantity" > 
+                                                            <apex:inputField value="{!extraI.objectExtra.Quantity__c}" style="width:3rem; margin:0" > 
+                                                            </apex:inputField> 
+                                                        </apex:column>
+                                                        <apex:column headerValue="Total" > 
+                                                            <apex:outputText value="{!extraI.objectExtra.Total__c}" style="width:3rem; margin:0" > 
+                                                            </apex:outputText> 
+                                                        </apex:column>
+                                                    </apex:pageBlockTable>
+                                                </apex:pageBlockSection>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </apex:actionRegion>
+                            </div> <!-- End of Extra Item -->
+                        
+                        <!-- Start of Payment div in tab -->
+                        <div id="PaymentDivTab">
+                            
+                        </div> <!-- End of Payment Div -->    
+                        
+                        <!-- Start of Note div in tab -->
+                        <div id="NoteDiv" style="display:none; width:30rem; margin:0">
+                            <apex:inputField value="{!objectReservation.Notes__c}"  /> 
+                        </div> <!-- End of Note Div -->
+                        
+                            <div id="saveBtnDiv">
+                            <apex:pageBlockSection >
+                                <apex:commandButton action="{!save}" value="Save" style="background-color:green; color:black;font-weight: bold; border-radius:1rem; padding: .5rem 2rem .5rem 2rem; float:right; margin: 0 1rem 1rem 0; clear:both " />
+                            </apex:pageBlockSection>
+                            </div>
+                                           </div>
+                </apex:pageBlock>     
+            </body>
+        </html>  
+    </Apex:form>
+</apex:page>

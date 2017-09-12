@@ -1,0 +1,78 @@
+<!-- BookingStored VF page, area where individual booked records have been displayed -->
+
+<apex:page id="reservationBookedP"  docType="html-5.0" controller="ReservationBookedClass" sidebar="false" showHeader="false" standardStylesheets="true"  >
+    <html id="reservationBooked" >
+        
+        <header style="background-color:black; color:white; padding:1rem;" >
+            Booking Number
+        </header>
+        <style type="text/css">
+            html{
+            height:20rem; width:25rem; background-color: gray;
+            }
+            body{
+            height:25rem; width:35rem; background-color: white; 
+            }
+            td, th{
+            padding-bottom: 0.8rem;
+            }
+            .unpaid{
+            background-color: #F5B7B1;
+            }
+            .paid{
+            background-color: #F4F6F6;
+            }
+        </style>
+        
+        
+        <div id="container" style="margin:1rem;" >
+            <apex:pageBlock title="ReservationBooked"> 
+                <apex:pageBlockTable value="{!reservation}" var="Record"> 
+                    <apex:column style="width:12rem; padding-right:1rem;" > 
+                        <apex:facet name="header">Guest Details</apex:facet> 
+                        <b> Guest Name</b>  <br/>  <apex:outputText value="{!Record.Account__r.Name}"/> <br/> <br/>
+                        <b> Guest Email</b>  <br/>  <apex:outputText value="{!Record.Account__r.Email__c}"/> <br/> <br/>
+                        <b> Phone Number </b>  <br/>  <apex:outputText value="{!Record.Account__r.Phone}"/> <br/> <br/>
+                        <b> Guest Adult </b>- Children - Infant  <br/>  
+                        <apex:outputText value="{!Record.Number_of_Adult__c}"/> - 
+                        <apex:outputText value="{!Record.Number_of_Child__c}"/> - <apex:outputText value="{!Record.Number_of_Infant__c}"/> <br/> <br/>
+                        <b> Note </b> <br/>
+                        
+                        <apex:outputText value="{!Record.Notes__c}"/> <br/>
+                        <b> Comment</b> <br/>
+                        
+                        <apex:outputPanel style="max-height:10px">
+                            <apex:outputText value="{!Record.Comments__c}" />
+                        </apex:outputPanel>
+                    </apex:column> 
+                    
+                    <apex:column style="width:10rem; padding-right:1rem;" > 
+                        <apex:facet name="header">Booking Details</apex:facet> 
+                        <b> Stay     </b> ----  <b>      Arrival Time </b> <br/>
+                        <apex:outputText value="{!Record.Length_of_Stay__c}"/>   ----   <apex:outputText value="{!Record.Select_Arrival_Time__c}"/> <br/>
+                        <b> Booking Source </b> <br/>
+                        <apex:outputText value="{!Record.Booking_Source__c}"/> <br/> <br/>
+                    </apex:column> 
+                    <apex:column styleClass="{!IF(Record.Status__c == 'Confirmed','paid','unpaid')}"> 
+                        <apex:facet name="header"> <b> <apex:outputText value="{!Record.Booking_Source__c}"/>  </b> </apex:facet> 
+                        
+                        Booking Total <br/>
+                        <apex:outputText value="{!Record.Name}"/> <br/> <br/>
+                        Total Outstanding <br/>
+                        <apex:outputText value="{!Record.Booking_Source__c}"/>  <br/> <br/>
+                        <br/> <br/>
+                        
+                        
+                        <button> Print </button>
+                        <button> Email</button> <br/>
+                        <button> Edit </button>
+                        <button style="background-color:red; color:black"> Checkout </button>
+                    </apex:column>
+                </apex:pageBlockTable> 
+                
+            </apex:pageBlock> 
+            
+        </div>
+    </html>
+    
+</apex:page>
